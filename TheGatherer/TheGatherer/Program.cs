@@ -8,23 +8,39 @@ namespace TheGatherer
 {
     class Program
     {
+        static List<String> failedIDs = new List<String>();
+
         static void Main(string[] args)
         {
+            Console.WriteLine("Started");
             RunAsync().GetAwaiter().GetResult();
         }
 
         static async Task RunAsync()
         {
-            UrlBuilder urlBuilder = new UrlBuilder("Sun & Moon", "sm10", "sm", "Detective Pikachu", "");
+            UrlBuilder urlBuilder = new UrlBuilder("Sun & Moon", "sm9", "sm", "Team Up", "");
             var basicCards = await Bulbapedia.getBasicCardsFromBulbapediaList(urlBuilder);
 
             var cards = new List<Card>();
-            foreach(BasicCard bCard in basicCards)
+            foreach(BasicCard bCard in basicCards.GetRange(13,3))
             {
                 var card = await Pokemon.getCard(urlBuilder, bCard);
-                if(card == null)
+                Card bulbaCard = null;
+                if(card == null || card.isIncomplete())
                 {
-                    card = await Bulbapedia.getCard(urlBuilder, bCard);
+                    bulbaCard = await Bulbapedia.getCard(urlBuilder, bCard);
+                }
+
+                if(card != null && bulbaCard != null) {
+                    card.combine(bulbaCard);
+                }
+
+                if(card != null && !card.isIncomplete()) {
+                    cards.Add(card); 
+                } else if(bulbaCard != null && !bulbaCard.isIncomplete()) {
+                    cards.Add(bulbaCard);
+                } else {
+                    failedIDs.Add(urlBuilder.setCode + "-" + bCard.number);
                 }
             }
 

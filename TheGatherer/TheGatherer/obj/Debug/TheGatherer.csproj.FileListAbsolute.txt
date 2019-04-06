@@ -1,9 +1,22 @@
-c:\users\jacob\documents\visual studio 2017\Projects\TheGatherer\TheGatherer\bin\Debug\TheGatherer.exe.config
-c:\users\jacob\documents\visual studio 2017\Projects\TheGatherer\TheGatherer\bin\Debug\TheGatherer.exe
-c:\users\jacob\documents\visual studio 2017\Projects\TheGatherer\TheGatherer\bin\Debug\TheGatherer.pdb
-c:\users\jacob\documents\visual studio 2017\Projects\TheGatherer\TheGatherer\bin\Debug\HtmlAgilityPack.dll
-c:\users\jacob\documents\visual studio 2017\Projects\TheGatherer\TheGatherer\bin\Debug\HtmlAgilityPack.pdb
-c:\users\jacob\documents\visual studio 2017\Projects\TheGatherer\TheGatherer\bin\Debug\HtmlAgilityPack.xml
-c:\users\jacob\documents\visual studio 2017\Projects\TheGatherer\TheGatherer\obj\Debug\TheGatherer.csprojResolveAssemblyReference.cache
-c:\users\jacob\documents\visual studio 2017\Projects\TheGatherer\TheGatherer\obj\Debug\TheGatherer.exe
-c:\users\jacob\documents\visual studio 2017\Projects\TheGatherer\TheGatherer\obj\Debug\TheGatherer.pdb
+c:/users/jacob/documents/visual studio 2017/Projects/TheGatherer/TheGatherer/bin/Debug/TheGatherer.exe.config
+c:/users/jacob/documents/visual studio 2017/Projects/TheGatherer/TheGatherer/bin/Debug/TheGatherer.exe
+c:/users/jacob/documents/visual studio 2017/Projects/TheGatherer/TheGatherer/bin/Debug/TheGatherer.pdb
+c:/users/jacob/documents/visual studio 2017/Projects/TheGatherer/TheGatherer/bin/Debug/HtmlAgilityPack.dll
+c:/users/jacob/documents/visual studio 2017/Projects/TheGatherer/TheGatherer/bin/Debug/HtmlAgilityPack.pdb
+c:/users/jacob/documents/visual studio 2017/Projects/TheGatherer/TheGatherer/bin/Debug/HtmlAgilityPack.xml
+c:/users/jacob/documents/visual studio 2017/Projects/TheGatherer/TheGatherer/obj/Debug/TheGatherer.csprojResolveAssemblyReference.cache
+c:/users/jacob/documents/visual studio 2017/Projects/TheGatherer/TheGatherer/obj/Debug/TheGatherer.exe
+c:/users/jacob/documents/visual studio 2017/Projects/TheGatherer/TheGatherer/obj/Debug/TheGatherer.pdb
+/Users/Jacob/Desktop/TCGHub/TheGatherer/TheGatherer/TheGatherer/bin/Debug/TheGatherer.exe.config
+/Users/Jacob/Desktop/TCGHub/TheGatherer/TheGatherer/TheGatherer/bin/Debug/TheGatherer.exe
+/Users/Jacob/Desktop/TCGHub/TheGatherer/TheGatherer/TheGatherer/bin/Debug/TheGatherer.pdb
+/Users/Jacob/Desktop/TCGHub/TheGatherer/TheGatherer/TheGatherer/bin/Debug/HtmlAgilityPack.dll
+/Users/Jacob/Desktop/TCGHub/TheGatherer/TheGatherer/TheGatherer/bin/Debug/HtmlAgilityPack.pdb
+/Users/Jacob/Desktop/TCGHub/TheGatherer/TheGatherer/TheGatherer/bin/Debug/HtmlAgilityPack.xml
+/Users/Jacob/Desktop/TCGHub/TheGatherer/TheGatherer/TheGatherer/obj/Debug/TheGatherer.csprojResolveAssemblyReference.cache
+/Users/Jacob/Desktop/TCGHub/TheGatherer/TheGatherer/TheGatherer/obj/Debug/TheGatherer.csproj.CoreCompileInputs.cache
+/Users/Jacob/Desktop/TCGHub/TheGatherer/TheGatherer/TheGatherer/obj/Debug/TheGatherer.exe
+/Users/Jacob/Desktop/TCGHub/TheGatherer/TheGatherer/TheGatherer/obj/Debug/TheGatherer.pdb
+/Users/Jacob/Desktop/TCGHub/TheGatherer/TheGatherer/TheGatherer/bin/Debug/Newtonsoft.Json.dll
+/Users/Jacob/Desktop/TCGHub/TheGatherer/TheGatherer/TheGatherer/bin/Debug/Newtonsoft.Json.pdb
+/Users/Jacob/Desktop/TCGHub/TheGatherer/TheGatherer/TheGatherer/bin/Debug/Newtonsoft.Json.xml

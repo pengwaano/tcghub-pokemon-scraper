@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace TheGatherer
 {
@@ -54,10 +55,48 @@ namespace TheGatherer
 
         }
 
-        public bool isCardComplete()
+        public bool isIncomplete()
         {
             return id == null || name == null || imageUrl == null || subtype == null || supertype == null || ability.isNull() || hp == null || retreatCost == null || number == null || artist == null ||
                 rarity == null || series == null || set == null || setCode == null || types == null || imageUrlHiRes == null;
+        }
+
+        public void combine(Card card) {
+            
+        }
+
+        public void addTypes(String subtype)
+        {
+            if (subtype.Contains("Trainer"))
+            {
+                if (subtype.Contains("Supporter")) {
+                    this.subtype = "Supporter";
+                }
+                if (subtype.Contains("Item"))
+                {
+                    this.subtype = "Item";
+                }
+                supertype = "Trainer";
+            }
+            else if (subtype.Contains("Energy"))
+            {
+                this.subtype = subtype.Replace(" Energy", "");
+                supertype = "Energy";
+            }
+            else
+            {
+                this.subtype = subtype.Replace(" Pokémon", "").Replace("Pokémon-", "").Trim();
+                supertype = "Pokémon";
+            }
+        }
+
+        public bool isTrainerOrEnergy() {
+            return supertype == "Trainer" || supertype == "Energy";
+        }
+
+        public override string ToString()
+        {
+            return JsonConvert.SerializeObject(this, Formatting.Indented);
         }
     }
 

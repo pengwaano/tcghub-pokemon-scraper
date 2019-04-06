@@ -18,32 +18,18 @@ namespace TheGatherer
 
         public static async Task<Card> getCard(UrlBuilder urlBuilder, BasicCard basicCard)
         {
-            HttpClient client = new HttpClient();
-            string html = null;
-            try
-            {
-                html = await client.GetStringAsync(urlBuilder.getBulbapediaCardUrl(basicCard));
-            }
-            catch (WebException ex)
+            var doc = await HtmlUtils.getHtmlFromLink(urlBuilder.getBulbapediaCardUrl(basicCard));
+
+            if (doc == null)
             {
                 return null;
             }
-
-            Console.WriteLine(html);
-
-            HtmlDocument doc = new HtmlDocument();
-            doc.LoadHtml(html);
-
             return new Card();
         }
 
         public static async Task<List<BasicCard>> getBasicCardsFromBulbapediaList(UrlBuilder urlBuilder)
         {
-            HttpClient client = new HttpClient();
-            string html = await client.GetStringAsync(urlBuilder.getBulbapediaListUrl());
-
-            HtmlDocument doc = new HtmlDocument();
-            doc.LoadHtml(html);
+            HtmlDocument doc = await HtmlUtils.getHtmlFromLink(urlBuilder.getBulbapediaListUrl());
 
             return getBasicCardsFromHtmlDocument(doc);
         }
