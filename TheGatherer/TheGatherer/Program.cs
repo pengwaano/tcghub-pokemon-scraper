@@ -12,22 +12,26 @@ namespace TheGatherer
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Started");
+
             RunAsync().GetAwaiter().GetResult();
         }
 
         static async Task RunAsync()
         {
-            UrlBuilder urlBuilder = new UrlBuilder("Sun & Moon", "sm9", "sm", "Team Up", "");
+            UrlBuilder urlBuilder = new UrlBuilder("Sun & Moon", "sm10", "sm", "Unbroken Bonds", "");
             var basicCards = await Bulbapedia.getBasicCardsFromBulbapediaList(urlBuilder);
 
             var cards = new List<Card>();
-            foreach(BasicCard bCard in basicCards.GetRange(13,3))
+            foreach (BasicCard bCard in basicCards.GetRange(133, 1))
             {
-                var card = await Pokemon.getCard(urlBuilder, bCard);
+                var card = Pokemon.getCard(urlBuilder, bCard).Result;
                 Card bulbaCard = null;
-                if(card == null || card.isIncomplete())
+
+                card = null;
+
+                if (shouldBulbapediaBeUsed(card))
                 {
+                    Console.WriteLine("Bulbapedia needed: " + bCard.number);
                     bulbaCard = await Bulbapedia.getCard(urlBuilder, bCard);
                 }
 
@@ -35,16 +39,31 @@ namespace TheGatherer
                     card.combine(bulbaCard);
                 }
 
+                if(card == null && bulbaCard != null)
+                {
+                    card = bulbaCard;
+                }
+
                 if(card != null && !card.isIncomplete()) {
-                    cards.Add(card); 
-                } else if(bulbaCard != null && !bulbaCard.isIncomplete()) {
-                    cards.Add(bulbaCard);
+                    cards.Add(card);
                 } else {
                     failedIDs.Add(urlBuilder.setCode + "-" + bCard.number);
                 }
+
+                Console.WriteLine(card);
             }
+            Console.WriteLine("COMPLETE");
 
             Console.ReadLine();
+        }
+
+        static bool shouldBulbapediaBeUsed(Card card)
+        {
+            if (card == null)
+                return true;
+            if (card.isIncomplete())
+                return true;
+            return false;
         }
     }
 }

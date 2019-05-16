@@ -10,6 +10,7 @@ namespace TheGatherer
     class BasicCard
     {
         public string name { get; set; }
+        public string type { get; set; }
         public string bulbapediaUrl { get; set; }
         public string rarity { get; set; }
         public string number { get; set; }
@@ -35,6 +36,7 @@ namespace TheGatherer
         public string evolvesFrom { get; set; }
         public Ability ability { get; set; }
         public string hp { get; set; }
+        public List<String> text { get; set; }
         public List<String> retreatCost { get; set; }
         public int convertedRetreatCost { get; set; }
         public string number { get; set; }
@@ -57,8 +59,16 @@ namespace TheGatherer
 
         public bool isIncomplete()
         {
-            return id == null || name == null || imageUrl == null || subtype == null || supertype == null || ability.isNull() || hp == null || retreatCost == null || number == null || artist == null ||
+            if(supertype != "Trainer" && supertype != "Energy")
+            {
+                return id == null || name == null || imageUrl == null || subtype == null || supertype == null || hp == null || number == null || artist == null ||
                 rarity == null || series == null || set == null || setCode == null || types == null || imageUrlHiRes == null;
+            } else
+            {
+                return id == null || name == null || imageUrl == null || subtype == null || supertype == null || number == null || artist == null ||
+                rarity == null || series == null || set == null || setCode == null || imageUrlHiRes == null;
+            }
+            
         }
 
         public void combine(Card card) {
@@ -72,9 +82,13 @@ namespace TheGatherer
                 if (subtype.Contains("Supporter")) {
                     this.subtype = "Supporter";
                 }
-                if (subtype.Contains("Item"))
+                if (subtype.Contains("Item") || subtype.Contains("Tool"))
                 {
                     this.subtype = "Item";
+                }
+                if (subtype.Contains("Stadium"))
+                {
+                    this.subtype = "Stadium";
                 }
                 supertype = "Trainer";
             }
@@ -106,6 +120,13 @@ namespace TheGatherer
         public string text { get; set; }
         public string type { get; set; }
 
+        public Ability(string name, string text, string type)
+        {
+            this.name = name;
+            this.text = text;
+            this.type = type;
+        }
+
         public bool isNull()
         {
             return name == null || text == null || type == null;
@@ -123,5 +144,11 @@ namespace TheGatherer
     {
         public string type { get; set; }
         public string value { get; set; }
+
+        public Effect(string type, string value)
+        {
+            this.type = type;
+            this.value = value;
+        }
     }
 }

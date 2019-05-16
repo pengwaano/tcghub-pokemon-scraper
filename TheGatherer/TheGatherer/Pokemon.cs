@@ -19,10 +19,7 @@ namespace TheGatherer
                 return null;
             }
 
-            var card = scrape(doc, urlBuilder, basicCard);
-
-
-            return new Card();
+            return scrape(doc, urlBuilder, basicCard);
         }
 
         private static Card scrape(HtmlDocument doc, UrlBuilder urlBuilder, BasicCard basicCard) {
@@ -49,15 +46,19 @@ namespace TheGatherer
 
             var stats = doc.DocumentNode.SelectSingleNode("//div[@class='pokemon-stats']");
 
-            if(card.isTrainerOrEnergy()) {
-                //var $retreat = $stats.find(".stat:contains(Retreat Cost)");
-                //card.convertedRetreatCost = $retreat.find(".energy").length;
+            card.artist = doc.DocumentNode.SelectSingleNode("//div[contains(@class, 'illustrator')]").ChildNodes[1].ChildNodes[1].InnerText.Trim();
 
-                //var $artist = $(".illustrator");
-                //card.artist = $artist.find(".highlight>a").text()
-
-                //card.text = [];
-                //card.text.push(formatText($(".pokemon-abilities").text()));
+            if (card.isTrainerOrEnergy()) {
+                var cardText = doc.DocumentNode.SelectSingleNode("//div[@class='pokemon-abilities']");
+                
+                foreach(HtmlNode node in cardText.Descendants())
+                {
+                    if(node.Name == "pre")
+                    {
+                        card.text = new List<String>();
+                        card.text.Add(node.InnerText);
+                    }
+                }
 
                 return card;
             }
@@ -68,20 +69,100 @@ namespace TheGatherer
                 card.evolvesFrom = evolvedFrom.SelectSingleNode("a").InnerText.Trim();
             }
 
-            var passive_name = doc.DocumentNode.SelectSingleNode("//div[@class='pokemon-abilities']").SelectSingleNode("h3");
-            //if(passive_name != null)
-            Console.WriteLine(doc.DocumentNode.SelectSingleNode("//div[@class='pokemon-abilities']").InnerHtml);
-            //if (passive_name.length > 0 && passive_name.next()[0].name == "p")
-            //{
-            //    card.ability = {
-            //    name: passive_name.find("div:last-child").text(),
-            //text: formatText(passive_name.next().text()),
-            //type: "Ability"
-            //    };
-            //}
-            Console.WriteLine(card);
+            var ability = doc.DocumentNode.SelectSingleNode("//div[@class='pokemon-abilities']").SelectSingleNode("h3");
+            if(ability != null)
+            {
+                var abilityType = ability.ChildNodes[1].InnerText.Trim();
+                var abilityName = ability.ChildNodes[3].InnerText.Trim();
+                var abilityText = ability.NextSibling.NextSibling.InnerText.Trim();
 
-            return new Card();
+                card.ability = new Ability(abilityName, abilityText, abilityType);
+            }
+
+            card.hp = basicInfo.SelectSingleNode("//div[contains(@class, 'right')]").InnerText.Trim().Replace("\n", "").Replace("HP", "");
+
+            card.types = new List<string>();
+            card.types.Add(basicCard.type);
+
+            var weakness = stats.ChildNodes[1];
+            if(weakness.ChildNodes.Count > 3)
+            {
+                foreach (HtmlNode node in weakness.SelectSingleNode("ul").ChildNodes)
+                {
+                    if (node.Name == "li")
+                    {
+                        card.weaknesses = new List<Effect>();
+                        card.weaknesses.Add(new Effect(node.GetAttributeValue("title",""), node.InnerText.Trim()));
+                    }
+                }
+            }
+
+            var resistance = stats.ChildNodes[3];
+            if (resistance.ChildNodes.Count > 3)
+            {
+                foreach (HtmlNode node in resistance.SelectSingleNode("ul").ChildNodes)
+                {
+                    if (node.Name == "li")
+                    {
+                        card.resistances = new List<Effect>();
+                        card.resistances.Add(new Effect(node.GetAttributeValue("title", ""), node.InnerText.Trim()));
+                    }
+                }
+            }
+            var retreat = stats.ChildNodes[5];
+            if (retreat.ChildNodes.Count > 3)
+            {
+                var count = 0;
+                card.retreatCost = new List<String>();
+                foreach(HtmlNode node in retreat.ChildNodes[3].ChildNodes)
+                {
+                    if (node.Name == "li")
+                    {
+                        card.retreatCost.Add("Colorless");
+                        count++;
+                    }
+                }
+                card.convertedRetreatCost = count;
+            }
+
+            var pokedexNumber = doc.GetElementbyId("pokedex-find");
+            card.nationalPokedexNumber = Int32.Parse(pokedexNumber.GetAttributeValue("data-pokemon-number", ""));
+
+            card.attacks = new List<Attack>();
+
+            var attackBase = doc.DocumentNode.SelectSingleNode("//div[@class='pokemon-abilities']");
+
+            foreach(HtmlNode node in attackBase.ChildNodes)
+            {
+                if(node.InnerHtml.Contains("span"))
+                {
+                    var attackNode = node.SelectSingleNode("ul");
+                    if (attackNode == null)
+                        continue;
+                    var attackEnergies = attackNode.SelectNodes("li");
+                    var attack = new Attack();
+                    attack.name = node.SelectSingleNode("h4").InnerText;
+                    attack.text = node.SelectSingleNode("pre").InnerText;
+                    if(node.SelectSingleNode("span") != null)
+                        attack.damage = node.SelectSingleNode("span").InnerText;
+
+                    attack.convertedEnergyCost = attackEnergies.Count;
+                    if(attack.convertedEnergyCost > 0)
+                    {
+                        attack.cost = new List<string>();
+                        foreach (HtmlNode energy in attackEnergies)
+                        {
+                            var energyType = energy.SelectSingleNode("a").GetAttributeValue("data-energy-type", "");
+                            attack.cost.Add(energyType);
+                        }
+                    }
+                    card.attacks.Add(attack);
+                }
+            }
+
+            //Console.WriteLine(card);
+
+            return card;
         }
     }
 }
