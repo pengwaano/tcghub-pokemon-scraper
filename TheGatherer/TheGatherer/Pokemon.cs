@@ -84,45 +84,50 @@ namespace TheGatherer
             card.types = new List<string>();
             card.types.Add(basicCard.type);
 
-            var weakness = stats.ChildNodes[1];
-            if(weakness.ChildNodes.Count > 3)
+            try
             {
-                foreach (HtmlNode node in weakness.SelectSingleNode("ul").ChildNodes)
+                var weakness = stats.ChildNodes[1];
+                if (weakness.ChildNodes.Count > 3)
                 {
-                    if (node.Name == "li")
+                    foreach (HtmlNode node in weakness.SelectSingleNode("ul").ChildNodes)
                     {
-                        card.weaknesses = new List<Effect>();
-                        card.weaknesses.Add(new Effect(node.GetAttributeValue("title",""), node.InnerText.Trim()));
+                        if (node.Name == "li")
+                        {
+                            card.weaknesses = new List<Effect>();
+                            card.weaknesses.Add(new Effect(node.GetAttributeValue("title", ""), node.InnerText.Trim()));
+                        }
                     }
                 }
-            }
 
-            var resistance = stats.ChildNodes[3];
-            if (resistance.ChildNodes.Count > 3)
-            {
-                foreach (HtmlNode node in resistance.SelectSingleNode("ul").ChildNodes)
+                var resistance = stats.ChildNodes[3];
+                if (resistance.ChildNodes.Count > 3)
                 {
-                    if (node.Name == "li")
+                    foreach (HtmlNode node in resistance.SelectSingleNode("ul").ChildNodes)
                     {
-                        card.resistances = new List<Effect>();
-                        card.resistances.Add(new Effect(node.GetAttributeValue("title", ""), node.InnerText.Trim()));
+                        if (node.Name == "li")
+                        {
+                            card.resistances = new List<Effect>();
+                            card.resistances.Add(new Effect(node.GetAttributeValue("title", ""), node.InnerText.Trim()));
+                        }
                     }
                 }
-            }
-            var retreat = stats.ChildNodes[5];
-            if (retreat.ChildNodes.Count > 3)
-            {
-                var count = 0;
-                card.retreatCost = new List<String>();
-                foreach(HtmlNode node in retreat.ChildNodes[3].ChildNodes)
+                var retreat = stats.ChildNodes[5];
+                if (retreat.ChildNodes.Count > 3)
                 {
-                    if (node.Name == "li")
+                    var count = 0;
+                    card.retreatCost = new List<String>();
+                    foreach (HtmlNode node in retreat.ChildNodes[3].ChildNodes)
                     {
-                        card.retreatCost.Add("Colorless");
-                        count++;
+                        if (node.Name == "li")
+                        {
+                            card.retreatCost.Add("Colorless");
+                            count++;
+                        }
                     }
+                    card.convertedRetreatCost = count;
                 }
-                card.convertedRetreatCost = count;
+            } catch(Exception e) {
+                Console.WriteLine("No Resistances, Weakness or Retreat Cost");
             }
 
             var pokedexNumber = doc.GetElementbyId("pokedex-find");

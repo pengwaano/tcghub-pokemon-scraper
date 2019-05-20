@@ -44,7 +44,8 @@ namespace TheGatherer
             card.imageUrlHiRes = "https://images.pokemontcg.io/" + urlBuilder.setCode + "/" + card.number + "_hires.png";
             card.artist = getArtist(topSection);
 
-            var isTrainer = basicCard.type == null || basicCard.type == "";
+            var isTrainer = basicCard.type == null || basicCard.type == "" || basicCard.type.EndsWith(" E");
+            Console.WriteLine("Type: " + basicCard.type);
 
             if (isTrainer)
             {
@@ -108,30 +109,107 @@ namespace TheGatherer
 
                         if (node.InnerText.Contains("retreat"))
                         {
-                            var count = node.SelectNodes("img").Count;
-                            card.retreatCost = new List<string>();
-                            for(int i = 0; i < count; i++)
+                            if (!node.InnerText.Contains("None"))
                             {
-                                card.retreatCost.Add("Colorless");
+                                var count = node.SelectNodes("img").Count;
+                                card.retreatCost = new List<string>();
+                                for (int i = 0; i < count; i++)
+                                {
+                                    card.retreatCost.Add("Colorless");
+                                }
+                                card.convertedRetreatCost = count;
+                            } else{
+                                card.convertedRetreatCost = 0;
                             }
-                            card.convertedRetreatCost = count;
                         }
                     }
                 }
             }
 
-            //TEXT
+            card.text = new List<string>();
 
             card.types = new List<string>();
             card.types.Add(basicCard.type);
 
-            //ATTACKS
+            card.attacks = new List<Attack>();
+            try
+            {
+                var tables = doc.DocumentNode.SelectSingleNode("//div[@class='mw-content-ltr']").SelectNodes("table[@class='roundy']");
+                for (int index = 0; index < tables.Count; index++)
+                {
+                    if(index == 0) 
+                    {
+                        var node = tables[index];
+                        var text = node.InnerText;
+                        var sections = node.SelectNodes("tr");
 
-            //WEAKNESSES
+                        for (int i = 0; i < sections.Count; i++) {
+                            if (sections[i].InnerHtml.Contains("<big><i><b>") && sections[i].InnerHtml.Contains("</b></i></big>"))
+                                continue;
 
-            //RESISTANCES
+                            var descendants = sections[i].Descendants();
 
-            //NATIONAL POKEDEX NUMBER
+                            var entryType = "Attack";
+
+                            foreach (HtmlNode child in descendants)
+                            {
+                                if (child.Name == "a")
+                                {
+                                    if (child.Attributes["title"].Value == "Ability" || child.Attributes["title"].Value == "Poké-BODY" || child.Attributes["title"].Value == "Poké-POWER")
+                                    {
+                                        entryType = child.Attributes["title"].Value;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if(i == sections.Count - 1) {
+                                card.text.Add(sections[i].InnerText.Trim());
+                                continue;
+                            }
+
+                            if(entryType == "Attack") {
+                                var attackSections = sections[i].SelectSingleNode("td/table/tr").SelectNodes("th");
+                                var energies = attackSections[0];
+                                var energyList = new List<string>();
+
+                                foreach(HtmlNode a in energies.Descendants()) {
+                                    if(a.Name == "img") {
+                                        energyList.Add(a.Attributes["alt"].Value);
+                                    }
+                                }
+
+                                var name = attackSections[1];
+                                name.SelectSingleNode("small").Remove();
+                                var damage = attackSections[2].InnerText.Trim();
+                                var attackText = "";
+                                if(sections.Count > i + 1) {
+                                    attackText = sections[i+1].InnerText.Trim();
+                                    i += 1;
+                                }
+                                card.attacks.Add(new Attack(name.InnerText.Trim(), energyList, damage, attackText));
+
+                            } else {
+                                card.ability = getAbility(sections, entryType, i);
+                                i++;
+                            }
+                        }
+                    } 
+                    else if(index == 1)
+                    {
+                        var node = tables[index];
+                        var text = node.InnerText;
+                        if (text.Contains("Height") && text.Contains("Weight") && text.Contains("No."))
+                        {
+                            var pokedexValue = node.SelectNodes("tr")[2].SelectNodes("td")[0];
+                            card.nationalPokedexNumber = Int32.Parse(pokedexValue.InnerText);
+                        }
+                    }
+                }
+            } catch(Exception e) {
+                Console.WriteLine("WOMP WOMP");
+                Console.WriteLine(e.Message);
+            }
 
             return card;
         }
@@ -179,9 +257,19 @@ namespace TheGatherer
                     }
                     var type = typeColumn.GetAttributeValue("alt", "");
                     basicCard.type = type;
+
+                    if(entries[i].SelectSingleNode("th").InnerText.Trim() != "") {
+                        basicCard.type += " " + entries[i].SelectSingleNode("th").InnerText.Trim();
+                    }
+
                 } catch(Exception ex){}
                 
                 basicCard.number = columns[0].InnerText.Split('/')[0].Trim();
+
+                if(basicCard.number == "190") {
+                    Console.WriteLine("Type: "+ entries[i].InnerHtml);
+                }
+
                 basicCard.name = columns[2].SelectSingleNode("a").GetAttributeValue("title", "").Split('(')[0].Trim().Replace("amp;","");
                 basicCard.bulbapediaUrl = columns[2].SelectSingleNode("a").GetAttributeValue("href", "").Replace("/wiki/","");
                 basicCard.rarity = columns[3].SelectSingleNode("a").GetAttributeValue("title", "");
@@ -213,7 +301,11 @@ namespace TheGatherer
 
         private static string getSubTypeForTrainer(HtmlNode topSection)
         {
-            return topSection.SelectSingleNode("//sup").InnerText;
+            var node = topSection.SelectSingleNode("//sup");
+            if (node != null)
+                return node.InnerText;
+            else
+                return "Special";
         }
 
         private static List<string> getTrainerText(HtmlNode doc)
@@ -227,6 +319,16 @@ namespace TheGatherer
                 }
             }
             return list;
+        }
+
+        private static Ability getAbility(HtmlNodeCollection sections, String entryType, int index) {
+            var abilityHtml = sections[index].SelectSingleNode("td/table/tr");
+            var nameNode = abilityHtml.SelectNodes("th")[0].SelectSingleNode("table/tr/td");
+            nameNode.SelectSingleNode("small").Remove();
+            var type = entryType;
+            var name = nameNode.InnerText.Trim();
+            index += 1;
+            return new Ability(name, sections[index].InnerText.Trim(), type);
         }
     }
 }

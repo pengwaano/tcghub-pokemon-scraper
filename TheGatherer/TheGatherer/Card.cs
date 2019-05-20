@@ -139,6 +139,19 @@ namespace TheGatherer
         public int convertedEnergyCost { get; set; }
         public string damage { get; set; }
         public string text { get; set; }
+
+        public Attack() {
+            
+        }
+
+        public Attack(string name, List<string> cost, string damage, string text)
+        {
+            this.name = name;
+            this.cost= cost;
+            this.convertedEnergyCost = cost.Count;
+            this.damage = damage;
+            this.text = text;
+        }
     }
     class Effect
     {
