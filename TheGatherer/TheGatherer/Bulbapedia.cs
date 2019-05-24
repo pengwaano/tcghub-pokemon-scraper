@@ -100,10 +100,18 @@ namespace TheGatherer
                         {
                             if (!node.InnerText.Contains("None"))
                             {
-                                var type = node.SelectSingleNode("a").SelectSingleNode("img").Attributes["alt"].Value;
-                                var value = node.InnerText.Replace("resistance", "").Replace("-", "-").Trim();
+                                Console.WriteLine(node.InnerHtml);
                                 card.resistances = new List<Effect>();
-                                card.resistances.Add(new Effect(type, value));
+                                var types = node.Descendants();
+                                foreach(HtmlNode typeNode in types)
+                                {
+                                    if(typeNode.Name == "a")
+                                    {
+                                        var type = typeNode.SelectSingleNode("img").Attributes["alt"].Value;
+                                        var value = node.InnerText.Replace("resistance", "").Replace("-", "-").Trim();
+                                        card.resistances.Add(new Effect(type, value));
+                                    }
+                                }
                             }
                         }
 
@@ -155,7 +163,7 @@ namespace TheGatherer
                             {
                                 if (child.Name == "a")
                                 {
-                                    if (child.Attributes["title"].Value == "Ability" || child.Attributes["title"].Value == "Poké-BODY" || child.Attributes["title"].Value == "Poké-POWER")
+                                    if (child.Attributes["title"].Value == "Ability" || child.Attributes["title"].Value == "Poké-BODY" || child.Attributes["title"].Value == "Poké-POWER" || child.Attributes["title"].Value == "Pokémon Power (TCG)")
                                     {
                                         entryType = child.Attributes["title"].Value;
                                         break;
@@ -170,6 +178,8 @@ namespace TheGatherer
 
                             if(entryType == "Attack") {
                                 var attackSections = sections[i].SelectSingleNode("td/table/tr").SelectNodes("th");
+                                if (attackSections == null)
+                                    continue;
                                 var energies = attackSections[0];
                                 var energyList = new List<string>();
 
@@ -208,7 +218,7 @@ namespace TheGatherer
                 }
             } catch(Exception e) {
                 Console.WriteLine("WOMP WOMP");
-                Console.WriteLine(e.Message);
+                Console.WriteLine(e.Message + " " + e.StackTrace);
             }
 
             return card;
@@ -218,10 +228,10 @@ namespace TheGatherer
         {
             HtmlDocument doc = await HtmlUtils.getHtmlFromLink(urlBuilder.getBulbapediaListUrl());
 
-            return getBasicCardsFromHtmlDocument(doc);
+            return getBasicCardsFromHtmlDocument(doc, urlBuilder.set);
         }
 
-        private static List<BasicCard> getBasicCardsFromHtmlDocument(HtmlDocument doc)
+        private static List<BasicCard> getBasicCardsFromHtmlDocument(HtmlDocument doc, string set)
         {
             var node = doc.GetElementbyId("mw-content-text");
             HtmlNode correctTable = null;
@@ -230,14 +240,34 @@ namespace TheGatherer
 
             foreach (HtmlNode n in tables)
             {
-                if (n.GetAttributeValue("cellspacing", "-1") == "0")
+                if (n.InnerText.Contains(set) && n.InnerText.Contains("Card name"))
                 {
                     correctTable = n;
                     break;
                 }
             }
 
-            var entries = correctTable.SelectSingleNode("tr").SelectNodes("td").First().SelectSingleNode("table").SelectNodes("tr")[1].SelectSingleNode("td").SelectSingleNode("table").SelectNodes("tr");
+            HtmlNode correctList = null;
+
+            //Console.WriteLine("List: " + correctTable.InnerHtml);
+
+            foreach (HtmlNode child in correctTable.Descendants())
+            {
+                if(child.Name == "table")
+                {
+                    if (child.InnerText.Contains("Card name"))
+                    {
+                        correctList = child;
+                        break;
+                    }
+                }
+            }
+
+            //Console.WriteLine("List: " + correctList.InnerHtml);
+
+            var entries = correctList.SelectNodes("tr");
+
+            //var entries = correctTable.SelectSingleNode("tr").SelectNodes("td").First().SelectSingleNode("table").SelectNodes("tr")[1].SelectSingleNode("td").SelectSingleNode("table").SelectNodes("tr");
 
             var basicCards = new List<BasicCard>();
             for(int i = 1; i < entries.Count - 1; i++)
@@ -272,7 +302,14 @@ namespace TheGatherer
 
                 basicCard.name = columns[2].SelectSingleNode("a").GetAttributeValue("title", "").Split('(')[0].Trim().Replace("amp;","");
                 basicCard.bulbapediaUrl = columns[2].SelectSingleNode("a").GetAttributeValue("href", "").Replace("/wiki/","");
-                basicCard.rarity = columns[3].SelectSingleNode("a").GetAttributeValue("title", "");
+                try
+                {
+                    basicCard.rarity = columns[3].SelectSingleNode("a").GetAttributeValue("title", "");
+                } catch( Exception e)
+                {
+                    basicCard.rarity = "Promo";
+                }
+                
 
                 if(rarityMap.ContainsKey(basicCard.rarity))
                 {
@@ -291,7 +328,7 @@ namespace TheGatherer
             {
                 if (n.InnerText.Contains("Illus."))
                 {
-                    var artist = n.SelectSingleNode("//small").InnerText;
+                    var artist = n.Descendants("small").First().InnerText;
                     var index = artist.IndexOf("Illus.");
                     return artist.Substring(index).Replace("Illus.", "").Trim();
                 }
